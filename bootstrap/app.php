@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\ApiResponse;
+use App\Http\Middleware\EnsureTwoFactorVerified;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\JwtCookieMiddleware;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register as route middleware
         $middleware->alias([
             'jwt.cookie' => JwtCookieMiddleware::class,
+            '2fa.verified' => EnsureTwoFactorVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
