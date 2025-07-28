@@ -2,46 +2,74 @@
 
 namespace App\Helpers;
 
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\MessageBag;
 
+/**
+ * Class ApiResponse
+ *
+ * A helper class to standardize API responses for success, errors, and validation failures.
+ */
 class ApiResponse
 {
     /**
-     * Return a success response.
+     * Success Response
      *
-     * @param mixed  $data
-     * @param string $message
-     * @param int    $code
-     * @return JsonResponse
+     * @param array $data       Data to be returned with the response
+     * @param string $message   Success message
+     * @param int $statusCode   HTTP status code (default 200)
+     * @return \Illuminate\Http\JsonResponse
      */
-    public static function success($data = null, string $message = 'Success', int $code = 200): JsonResponse
+    public static function success($data = [], $message = 'Success', $statusCode = 200)
     {
         return response()->json([
-            'success' => true,
-            'message' => $message,
-            'data'    => $data,
-        ], $code);
+            'status' => true,       // Indicates success
+            'message' => $message,  // Response message
+            'data' => $data,        // Actual data to return
+        ], $statusCode);
     }
 
     /**
-     * Return an error response.
+     * Error Response
      *
-     * @param string $message
-     * @param array  $errors
-     * @param int    $code
-     * @return JsonResponse
+     * @param string $message    Error message
+     * @param int $statusCode    HTTP status code (default 400)
+     * @param array $errors      Additional error details (optional)
+     * @return \Illuminate\Http\JsonResponse
      */
-    public static function error(string $message = 'Error', array $errors = [], int $code = 400): JsonResponse
+    public static function error($message = 'An error occurred', $statusCode = 400, $errors = [])
     {
-        $response = [
-            'success' => false,
-            'message' => $message,
-        ];
+        return response()->json([
+            'status' => false,      // Indicates failure
+            'message' => $message,  // Error message
+            'errors' => $errors,    // Additional error details (optional)
+        ], $statusCode);
+    }
 
-        if (!empty($errors)) {
-            $response['errors'] = $errors;
+    /**
+     * Validation Error Response
+     *
+     * Handles Laravel validation errors (MessageBag) and converts them
+     * into a simple array with only the first error for each field.
+     *
+     * @param \Illuminate\Support\MessageBag|array $errors   Validation errors
+     * @param string $message                              Error message
+     * @param int $statusCode                              HTTP status code (default 422)
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public static function validationError($errors, $message = 'Validation errors', $statusCode = 422)
+    {
+        // Convert MessageBag instance to array if needed
+        if ($errors instanceof MessageBag) {
+            $errors = $errors->toArray();
         }
 
-        return response()->json($response, $code);
+        // Extract only the first error message for each field
+        $errors = array_map(fn($message) => is_array($message) ? $message[0] : $message, $errors);
+
+        return response()->json([
+            'status' => false,      // Indicates failure
+            'message' => $message,  // Validation error message
+            'errors' => $errors,    // Field-wise errors (only first message)
+        ], $statusCode);
     }
 }
