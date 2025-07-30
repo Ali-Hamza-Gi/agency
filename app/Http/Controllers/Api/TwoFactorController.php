@@ -16,27 +16,37 @@ class TwoFactorController extends Controller
      */
     public function verify(Request $request)
     {
-        $request->validate([
-            'code' => 'required|string'
-        ]);
-
+        $request->validate(['code' => 'required|string']);
         $user = JWTAuth::parseToken()->authenticate();
         if (!$user) return ApiResponse::error('Unauthorized', 401);
 
-        // Check if code matches and is valid
-        if ($user->verifyTwoFactorCode($request->code)) {
-            $user->resetTwoFactorCode();
-            return ApiResponse::success(['message' => '2FA verification successful']);
-        }
+        if ($user->verifyTwoFactorCode($request->code) || $user->verifyRecoveryCode($request->code)) {
 
-        // Check recovery codes
-        if ($user->verifyRecoveryCode($request->code)) {
             $user->resetTwoFactorCode();
-            return ApiResponse::success(['message' => '2FA verified using recovery code']);
+            $user->update(['is_two_factor_verified' => true]);
+            $user->incrementTokenVersion();
+
+            // Invalidate current temp token
+            JWTAuth::invalidate(JWTAuth::getToken());
+
+            // Generate fresh tokens
+            $accessToken = JWTAuth::fromUser($user);
+            $refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser($user);
+
+            // Set cookies
+            $accessCookie = cookie(config('jwt.cookie', 'token'), $accessToken, env('JWT_COOKIE_DURATION', 1440), '/', env('JWT_COOKIE_DOMAIN', null), filter_var(env('JWT_COOKIE_SECURE', false), FILTER_VALIDATE_BOOLEAN), true, false, env('JWT_COOKIE_SAMESITE', 'Lax'));
+            $refreshCookie = cookie('refresh_token', $refreshToken, 10080, '/', env('JWT_COOKIE_DOMAIN', null), filter_var(env('JWT_COOKIE_SECURE', false), FILTER_VALIDATE_BOOLEAN), true, false, env('JWT_COOKIE_SAMESITE', 'Lax'));
+
+            return ApiResponse::success([
+                'message' => '2FA verification successful',
+                'token' => $accessToken,
+                'refresh_token' => $refreshToken
+            ])->withCookie($accessCookie)->withCookie($refreshCookie);
         }
 
         return ApiResponse::error('Invalid or expired 2FA code', 422);
     }
+
 
     /**
      * Enable 2FA (generate recovery codes)

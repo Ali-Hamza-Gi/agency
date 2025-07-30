@@ -43,11 +43,17 @@ class AuthController extends Controller
         // If 2FA is enabled → require verification before issuing tokens
         if ($user->two_factor_enabled) {
             $user->generateTwoFactorCode();
+
+            // Short-lived temp token for 2FA
+            $tempToken = JWTAuth::claims(['two_factor_pending' => true, 'exp' => now()->addMinutes(10)->timestamp])->fromUser($user);
+
             return ApiResponse::success([
                 'two_factor_required' => true,
+                'temp_token' => $tempToken,
                 'message' => '2FA verification code sent to your email.'
             ], 'Two-factor verification required');
         }
+
 
         // Create refresh token
         $refreshToken = JWTAuth::claims(['type' => 'refresh'])->fromUser($user);

@@ -35,14 +35,15 @@ return new class extends Migration
             $table->string('last_login_ip')->nullable();
             $table->integer('failed_login_attempts')->default(0);
             $table->timestamp('locked_until')->nullable();
+            $table->integer('token_version')->default(1);
 
-            // Two-Factor Authentication (Email/TOTP)
+            // Two-Factor Authentication
             $table->boolean('two_factor_enabled')->default(false);
             $table->boolean('is_two_factor_verified')->default(false);
-            $table->string('two_factor_secret')->nullable(); // For TOTP (Google Authenticator)
-            $table->string('two_factor_code')->nullable(); // Temporary code for OTP
-            $table->timestamp('two_factor_expires_at')->nullable(); // Expiry for temporary code
-            $table->json('two_factor_recovery_codes')->nullable(); // JSON encoded recovery codes
+            $table->string('two_factor_secret')->nullable();
+            $table->string('two_factor_code')->nullable();
+            $table->timestamp('two_factor_expires_at')->nullable();
+            $table->json('two_factor_recovery_codes')->nullable();
 
             // Preferences
             $table->string('timezone')->default('Asia/Karachi');
@@ -58,6 +59,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
         });
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

@@ -129,6 +129,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->two_factor_code && $this->two_factor_expires_at && now()->lessThanOrEqualTo($this->two_factor_expires_at) && Hash::check($code, $this->two_factor_code);
     }
 
+    /**
+     * Increment Token Version
+     */
+    public function incrementTokenVersion(): void
+    {
+        $this->token_version++;
+        $this->save();
+    }
+
+
 
     /**
      * Relationships.
@@ -179,6 +189,8 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims(): array
     {
-        return [];
+        return [
+            'token_version' => $this->token_version
+        ];
     }
 }
