@@ -12,20 +12,16 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'], // Add extra paths if needed
-
-    'allowed_methods' => ['*'], // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
-
-    'allowed_origins' => ['*'], // ⚠️ Development only. Replace with exact domains in production.
-
+    'paths' => ['api/*', 'v1/web/*', 'login', 'logout', 'refresh', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'http://192.168.18.27:8000',
+    ], // Add your production domain
     'allowed_origins_patterns' => [],
-
-    'allowed_headers' => ['*'], // Allow all headers (or restrict if needed)
-
+    'allowed_headers' => ['*'],
     'exposed_headers' => [],
-
     'max_age' => 0,
-
-    'supports_credentials' => true, // Important for HttpOnly cookies & sessions
+    'supports_credentials' => true,
 
 ];

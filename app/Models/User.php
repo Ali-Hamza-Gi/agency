@@ -189,8 +189,9 @@ class User extends Authenticatable implements JWTSubject
 
     public function getJWTCustomClaims(): array
     {
-        return [
-            'token_version' => $this->token_version
-        ];
+        // return [
+        //     'token_version' => $this->token_version
+        // ];
+        return [];
     }
 }

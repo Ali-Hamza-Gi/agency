@@ -103,7 +103,7 @@ return [
     |
     */
 
-    'ttl' => env('JWT_TTL', 60),
+    'ttl' => (int) env('JWT_TTL', 60),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,7 +122,7 @@ return [
     |
     */
 
-    'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
+    'refresh_ttl' => env('JWT_REFRESH_TTL', 10080),
 
     /*
     |--------------------------------------------------------------------------
@@ -297,6 +297,11 @@ return [
         */
 
         'storage' => Tymon\JWTAuth\Providers\Storage\Illuminate::class,
+        // Cookie specific config
+        'cookie' => env('JWT_COOKIE_NAME', 'token'),
+        'cookie_domain' => env('JWT_COOKIE_DOMAIN'),
+        'cookie_secure' => env('JWT_COOKIE_SECURE', false),
+        'cookie_samesite' => env('JWT_COOKIE_SAMESITE', 'lax'),
 
     ],
 
