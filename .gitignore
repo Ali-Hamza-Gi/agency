@@ -1,0 +1,4 @@
+# Laravel specific
+.env
+storage
+public
